@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>bloom - hand tracking flower</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -35,11 +35,11 @@
         }
 
         h1 {
-            font-size: 3.5rem;
+            font-size: 4rem;
             font-weight: 900;
             text-transform: lowercase;
             color: #78350f;
-            margin-bottom: 1rem;
+            margin-bottom: .75rem;
             text-align: center;
         }
 
@@ -49,13 +49,13 @@
             text-transform: lowercase;
             color: #92400e;
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
         .main-layout {
             display: grid;
             grid-template-columns: 280px 1fr;
-            gap: 1.5rem;
+            gap: 2.5rem;
             margin-bottom: 2rem;
         }
 
@@ -85,7 +85,7 @@
             font-weight: 900;
             text-transform: lowercase;
             color: #1d4ed8;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
         }
 
         .status {
@@ -155,7 +155,7 @@
         }
 
         .slider-group {
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .slider-group:last-child {
@@ -171,33 +171,33 @@
             margin-bottom: 0.5rem;
         }
 
-        .slider {
+        input[type="range"] {
             width: 100%;
             height: 8px;
-            border-radius: 4px;
             background: #fef3c7;
             outline: none;
             border: 2px solid #78350f;
-        }
-
-        .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #2563eb;
-            cursor: pointer;
-            border: 2px solid #78350f;
+            border-radius: 4px;
         }
 
-        .slider::-moz-range-thumb {
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
             width: 20px;
             height: 20px;
-            border-radius: 50%;
             background: #2563eb;
             cursor: pointer;
             border: 2px solid #78350f;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            cursor: pointer;
+            border: 2px solid #78350f;
+            border-radius: 50%;
         }
 
         .btn {
@@ -244,13 +244,13 @@
             background: #ffffff;
             overflow: hidden;
             position: relative;
+            min-height: 540px;
         }
 
         #defaultCanvas0 {
             display: block;
-            margin: 0 auto;
-            max-width: 100%;
-            max-height: 100%;
+            width: 100% !important;
+            height: auto !important;
         }
 
         footer {
@@ -318,10 +318,12 @@
 
             h1 {
                 font-size: 2.5rem;
+                margin-bottom: 0.5rem;
             }
 
             .subtitle {
                 font-size: 1rem;
+                margin-bottom: 2rem;
             }
 
             .main-layout {
@@ -338,9 +340,8 @@
                 padding-bottom: 1rem;
             }
 
-            .instructions-overlay {
-                padding: 1.5rem;
-                max-width: 90%;
+            .canvas-container {
+                min-height: 400px;
             }
 
             .contact-links {
@@ -373,17 +374,6 @@
                 </div>
 
                 <div class="control-section">
-                    <h3>instructions</h3>
-                    <div class="instructions">
-                        <strong>how to use:</strong>
-                        • allow camera access<br>
-                        • show your hand to camera<br>
-                        • pinch thumb and index finger to close flower<br>
-                        • spread fingers apart to bloom
-                    </div>
-                </div>
-
-                <div class="control-section">
                     <h3>flower color</h3>
                     <div class="color-picker-group">
                         <label for="petalColor">petal color:</label>
@@ -399,11 +389,11 @@
                     <h3>flower settings</h3>
                     <div class="slider-group">
                         <label for="petalCount">petals: <span id="petalCountValue">12</span></label>
-                        <input type="range" id="petalCount" class="slider" min="6" max="24" value="12">
+                        <input type="range" id="petalCount" min="6" max="24" value="12">
                     </div>
                     <div class="slider-group">
                         <label for="petalSize">petal size: <span id="petalSizeValue">100</span></label>
-                        <input type="range" id="petalSize" class="slider" min="50" max="200" value="100">
+                        <input type="range" id="petalSize" min="50" max="200" value="100">
                     </div>
                 </div>
 
@@ -412,6 +402,19 @@
                     <button class="btn btn-secondary" onclick="toggleVideo()">toggle video</button>
                     <button class="btn btn-secondary" onclick="saveFlower()">save image</button>
                     <button class="btn btn-secondary" onclick="resetSettings()">reset settings</button>
+                </div>
+
+                <div class="control-section">
+                    <h3>instructions</h3>
+                    <div class="instructions">
+                        <strong>how to use:</strong>
+                        • click allow when asked for camera access<br>
+                        • show your hand to camera, with your palm facing<br>
+                        • pinch thumb and index finger to close flower<br>
+                        • spread fingers apart to bloom<br>
+                        <br>
+                        <strong>tip:</strong> if camera is blocked, check your browser settings and reload the page
+                    </div>
                 </div>
             </div>
 
@@ -441,7 +444,8 @@
     </footer>
 
     <script>
-        // Hand tracking variables
+        //by measuring the distance between thumb and index finger tips, the program controls the scale of a digital flower 
+        //opening/closing the hand blooms or wilts the flower
         let handpose;
         let video;
         let predictions = [];
@@ -458,25 +462,21 @@
         let bgColor = { r: 255, g: 255, b: 255 };
 
         function setup() {
-            let canvasSize = 740;
-            if (windowWidth <= 768) {
-                canvasSize = min(windowWidth - 40, 600);
-            }
-            
-            let canvas = createCanvas(canvasSize, canvasSize);
-            canvas.parent('canvasContainer');
+            createCanvas(740, 540);
             angleMode(DEGREES);
-
-            // Setup video capture
-            video = createCapture(VIDEO);
-            video.size(width, height);
-            video.hide();
-
-            // Update status
-            updateStatus('loading model...', 'loading');
-
-            // Load the handpose model
-            handpose = ml5.handpose(video, modelReady);
+            
+            let canvas = select('canvas');
+            canvas.parent('canvasContainer');
+            
+            // Request video with error handling
+            try {
+                video = createCapture(VIDEO, videoReady);
+                video.size(width, height);
+                video.hide();
+            } catch(err) {
+                console.error("Camera error:", err);
+                updateStatus('camera access denied', 'error');
+            }
 
             // Setup event listeners
             document.getElementById('petalColor').addEventListener('input', (e) => {
@@ -485,7 +485,6 @@
 
             document.getElementById('bgColor').addEventListener('input', (e) => {
                 bgColor = hexToRgb(e.target.value);
-                document.getElementById('canvasContainer').style.backgroundColor = e.target.value;
             });
 
             document.getElementById('petalCount').addEventListener('input', (e) => {
@@ -498,8 +497,17 @@
                 petalSize = parseInt(e.target.value);
                 document.getElementById('petalSizeValue').textContent = petalSize;
             });
+        }
 
-            frameRate(60);
+        function videoReady() {
+            console.log("Video ready!");
+            // Load the handpose model after video is ready
+            if (typeof ml5 !== 'undefined') {
+                handpose = ml5.handpose(video, modelReady);
+            } else {
+                console.error("ml5 not loaded");
+                updateStatus('ml5 library failed to load', 'error');
+            }
         }
 
         function modelReady() {
@@ -510,8 +518,6 @@
                 predictions = results;
                 if (results.length > 0) {
                     updateStatus('hand detected ✓', 'ready');
-                } else {
-                    updateStatus('ready! show your hand', 'ready');
                 }
             });
         }
@@ -533,8 +539,8 @@
         }
 
         function drawFlower() {
-            let minDist = 30;
-            let maxDist = 90;
+            let minDist = 30; // distance when fully closed
+            let maxDist = 90; // distance when fully open
             let targetSize = 0;
 
             if (predictions.length > 0) {
@@ -545,29 +551,19 @@
 
                 // Map the distance to a target bloom size (0 to 200)
                 targetSize = map(d, minDist, maxDist, 0, 200);
-                targetSize = constrain(targetSize, 0, 200);
+                targetSize = constrain(targetSize, 0, 200); // avoid weird overflows
             }
 
             translate(width / 2, height / 2);
             noStroke();
             fill(petalColor.r, petalColor.g, petalColor.b, 50);
 
-            // Smooth transition
             bloomSize = lerp(bloomSize, targetSize, 0.1);
 
-            // Draw petals
             for (let i = 0; i < numPetals; i++) {
                 ellipse(bloomSize, 0, petalSize, petalSize);
                 rotate(angleBetween);
             }
-        }
-
-        function windowResized() {
-            let canvasSize = 740;
-            if (windowWidth <= 768) {
-                canvasSize = min(windowWidth - 40, 600);
-            }
-            resizeCanvas(canvasSize, canvasSize);
         }
 
         function toggleVideo() {
@@ -591,7 +587,6 @@
             document.getElementById('petalSize').value = 100;
             document.getElementById('petalCountValue').textContent = 12;
             document.getElementById('petalSizeValue').textContent = 100;
-            document.getElementById('canvasContainer').style.backgroundColor = '#ffffff';
         }
 
         function updateStatus(message, type) {
